@@ -1,40 +1,40 @@
 import 'source-map-support/register'
-
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import * as middy from 'middy'
-import { cors, httpErrorHandler } from 'middy/middlewares'
-
+import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { updateToDoItem } from '../../helpers/BusinessLogic/todos'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { createLogger } from '../../utils/logger';
 import { parseUserId } from '../../auth/utils'
+import { getToken } from '../../auth/utils'
 
-export const handler = middy(
-  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const authorization = event.headers.Authorization
-    const split = authorization.split(' ')
-    const jwtToken = split[1]
-    const userId = parseUserId(jwtToken)
-    const todoId = event.pathParameters.todoId
-    const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+const logger = createLogger('updateTodo');
 
-    // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
+export const handler: APIGatewayProxyHandler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  logger.info('Processing UpdateTodo event...');
+  const jwtToken: string = getToken(event);
+  const userId = parseUserId(jwtToken)
+  const todoId = event.pathParameters.todoId;
+  const updateData: UpdateTodoRequest = JSON.parse(event.body);
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true
+  };
 
-    const updated_TodoItem = await updateToDoItem(updatedTodo, todoId, userId)
-
+  try {
+    await updateToDoItem(updateData, todoId, userId);
+    logger.info(`Successfully updated the todo item: ${todoId}`);
     return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({
-        item: updated_TodoItem
-      })
-    }
+      statusCode: 204,
+      headers,
+      body: undefined
+    };
+  } catch (error) {
+    logger.error(`Error: ${error.message}`);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error })
+    };
   }
-)
-
-handler.use(httpErrorHandler()).use(
-  cors({
-    credentials: true
-  })
-)
+};
