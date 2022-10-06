@@ -2,6 +2,7 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { getAllTodos } from '../../helpers/BusinessLogic/todos'
 import { createLogger } from '../../utils/logger';
+import { TodoItem } from '../../models/TodoItem'
 import { parseUserId } from '../../auth/utils'
 import { getToken } from '../../auth/utils'
 
@@ -19,7 +20,7 @@ export const handler: APIGatewayProxyHandler = async (
   };
 
   try {
-    const todoList = await getAllTodos(userId)
+    const todoList: TodoItem[] = await getAllTodos(userId)
     logger.info('Successfully retrieved todolist');
     return {
       statusCode: 200,

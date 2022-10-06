@@ -1,47 +1,45 @@
-import { TodosAccess } from '../DataLayer/todosAcess'
-import { bucketName } from '../attachmentUtils'
-import { TodoItem } from '../../models/TodoItem'
-import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
-import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { TodoAccess } from '../DataLayer/todosAcess'
+import { TodoItem, UpdateTodoRequest, CreateTodoRequest } from '../../models/TodoItem'
 import { v4 as uuidv4 } from 'uuid'
-import { TodoUpdate } from '../../models/TodoUpdate'
+import * as AWS from 'aws-sdk'
 
 // TODO: Implement businessLogic
 
-const todosAccess = new TodosAccess()
+const todosAccess = new TodoAccess();
 
 export async function getAllTodos(userId: string): Promise<TodoItem[]> {
-  return todosAccess.getAllToDos(userId)
+  return todosAccess.getTodos(userId);
 }
 
-export function createTodo(
-  createTodoRequest: CreateTodoRequest,
-  userId: string
-): Promise<TodoItem> {
-  const todoId = uuidv4()
-  const timestamp = new Date().toISOString()
-
-  return todosAccess.createToDo({
-    userId: userId,
-    todoId: todoId,
-    attachmentUrl: `https://${bucketName}.s3.amazonaws.com/${todoId}`,
-    createdAt: timestamp,
-    done: false,
-    ...createTodoRequest
-  })
+export async function createTodo( userId: string, createTodoRequest: CreateTodoRequest): Promise<TodoItem> {
+  const todoId = uuidv4();
+  const createdAt = new Date().toISOString();
+  const done = false;
+  const newTodo: TodoItem = { todoId, userId, createdAt, done, ...createTodoRequest };
+  return todosAccess.createTodo(newTodo);
 }
 
-export function updateToDoItem(
+export async function updateTodo(
   updateTodoRequest: UpdateTodoRequest,
   todoId: string,
   userId: string
-): Promise<TodoUpdate> {
-  return todosAccess.updateToDoItem(updateTodoRequest, todoId, userId)
+): Promise<void> {
+  return todosAccess.updateTodo(userId, todoId, updateTodoRequest);
 }
 
-export function deleteToDoItem(
-  todoId: string,
-  userId: string
-): Promise<string> {
-  return todosAccess.deleteToDoItem(todoId, userId)
+export async function deleteToDoItem(userId: string, todoId: string): Promise<void> {
+  return todosAccess.deleteTodo(userId, todoId);
+}
+
+export async function getUploadUrl(userId: string, todoId: string): Promise<string> {
+  const bucketName = process.env.IMAGES_S3_BUCKET;
+  const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION, 10);
+  const s3 = new AWS.S3({ signatureVersion: 'v4' });
+  const signedUrl = s3.getSignedUrl('putObject', {
+    Bucket: bucketName,
+    Key: todoId,
+    Expires: urlExpiration
+  });
+  await todosAccess.saveImgUrl(userId, todoId, bucketName);
+  return signedUrl;
 }

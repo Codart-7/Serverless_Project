@@ -5,5 +5,23 @@ export interface TodoItem {
   name: string
   dueDate: string
   done: boolean
-  attachmentUrl?: string
+  attachmentUrl: string
+}
+
+/**
+ * Fields in a request to create a single TODO item.
+ */
+ export interface CreateTodoRequest {
+  name: string;
+  dueDate: string;
+  attachmentUrl: string;
+}
+
+/**
+ * Fields in a request to update a single TODO item.
+ */
+ export interface UpdateTodoRequest {
+  name: string
+  dueDate: string
+  done: boolean
 }

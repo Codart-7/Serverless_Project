@@ -12,7 +12,7 @@ export const handler: APIGatewayProxyHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   logger.info('Processing DeleteTodo event...');
   const jwtToken: string = getToken(event);
-  const userId = parseUserId(jwtToken)
+  const userId = parseUserId(jwtToken);
   const todoId = event.pathParameters.todoId;
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,7 +20,7 @@ export const handler: APIGatewayProxyHandler = async (
   };
 
   try {
-    const deleteItem = await deleteToDoItem(todoId, userId)
+    const deleteItem = await deleteToDoItem(userId, todoId)
     logger.info(`Successfully deleted todo item: ${todoId}`);
     return {
       statusCode: 204,

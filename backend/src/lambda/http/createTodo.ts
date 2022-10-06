@@ -2,7 +2,7 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { createTodo } from '../../helpers/BusinessLogic/todos'
 import { createLogger } from '../../utils/logger';
-import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
+import { CreateTodoRequest, TodoItem } from '../../models/TodoItem'
 import { parseUserId } from '../../auth/utils'
 import { getToken } from '../../auth/utils'
 
@@ -22,7 +22,7 @@ export const handler: APIGatewayProxyHandler = async (
   };
 
   try {
-    const newTodo = await createTodo(newTodoData, userId)
+    const newTodo: TodoItem = await createTodo(userId, newTodoData)
     logger.info('Successfully created a new todo item.');
     return {
       statusCode: 201,
