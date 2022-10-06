@@ -22,12 +22,12 @@ export const handler: APIGatewayProxyHandler = async (
   };
 
   try {
-    await updateToDoItem(updateData, todoId, userId);
+    const updated_TodoItem = await updateToDoItem(updateData, todoId, userId);
     logger.info(`Successfully updated the todo item: ${todoId}`);
     return {
       statusCode: 204,
       headers,
-      body: undefined
+      body: JSON.stringify({ item: updated_TodoItem })
     };
   } catch (error) {
     logger.error(`Error: ${error.message}`);

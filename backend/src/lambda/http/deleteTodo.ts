@@ -20,12 +20,12 @@ export const handler: APIGatewayProxyHandler = async (
   };
 
   try {
-    await deleteToDoItem(todoId, userId)
+    const deleteItem = await deleteToDoItem(todoId, userId)
     logger.info(`Successfully deleted todo item: ${todoId}`);
     return {
       statusCode: 204,
       headers,
-      body: undefined
+      body: JSON.stringify(deleteItem)
     };
   } catch (error) {
     logger.error(`Error: ${error.message}`);

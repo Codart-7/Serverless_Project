@@ -24,7 +24,7 @@ export const handler: APIGatewayProxyHandler = async (
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ todoList })
+      body: JSON.stringify({ items: todoList })
     };
   } catch (error) {
     logger.error(`Error: ${error.message}`);
