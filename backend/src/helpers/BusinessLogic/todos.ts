@@ -19,7 +19,7 @@ export async function createTodo( userId: string, createTodoRequest: CreateTodoR
   return todosAccess.createTodo(newTodo);
 }
 
-export async function updateTodo(
+export async function updateToDoItem(
   updateTodoRequest: UpdateTodoRequest,
   todoId: string,
   userId: string
